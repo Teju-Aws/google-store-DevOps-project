@@ -1,0 +1,72 @@
+name: CI/CD for ECR + Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ap-northeast-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-1.amazonaws.com
+  SERVICES: "electronics phones computers earphones"
+  K8S_NAMESPACE: default
+  CLUSTER_NAME: your-eks-cluster-name
+
+permissions:
+  contents: write   # Allow committing updated files back to the repo
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: 📦 Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 🛠 Build, tag, and push Docker images
+        run: |
+          for service in $SERVICES; do
+            REPO_NAME="google-store-$service"
+            IMAGE_TAG="${{ github.sha }}"
+
+            # Create ECR repo if it doesn't exist
+            aws ecr create-repository --repository-name $REPO_NAME || true
+
+            # Build and push image
+            docker build -t $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG ./$service
+            docker push $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
+
+            # Update deployment file
+            sed -i "s|image:.*|image: $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG|g" $service/deployment.yml
+          done
+
+      - name: 🔄 Commit updated deployment files
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add */deployment.yml
+          git commit -m "Update image tags in deployment files" || echo "No changes to commit"
+          git push
+
+      - name: ☸️ Connect to EKS cluster
+        run: |
+          aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
+
+      - name: 🚀 Deploy to Kubernetes
+        run: |
+          kubectl apply -f ingress.yml
+          for service in $SERVICES; do
+            kubectl apply -f $service/deployment.yml
+            kubectl apply -f $service/service.yml
+          done
