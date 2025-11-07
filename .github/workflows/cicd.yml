@@ -20,13 +20,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GIT_PAT }} # Use PAT to allow pushing changes
+          token: ${{ secrets.GIT_PAT }}
 
-      # 2️⃣ Configure AWS credentials
       - name: 🔧 Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -34,12 +32,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 3️⃣ Login to Amazon ECR
       - name: 📦 Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 4️⃣ Build, tag, and push all Docker images
-      - name: 🛠 Build & push Docker images to ECR
+      - name: 🛠 Build & push Docker images
         run: |
           set -e
           IMAGE_TAG="${GITHUB_SHA}"
@@ -61,7 +57,6 @@ jobs:
             REPO_NAME="google-store-$service"
             IMAGE_URI="$ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG"
 
-            # Create ECR repo if missing
             aws ecr describe-repositories --repository-names $REPO_NAME >/dev/null 2>&1 || \
               aws ecr create-repository --repository-name $REPO_NAME
 
@@ -69,7 +64,6 @@ jobs:
             docker build -t $IMAGE_URI $FOLDER
             docker push $IMAGE_URI
 
-            # Update image in deployment YAMLs
             DEPLOY_YML="$FOLDER/deployment.yml"
             BACKEND_DEPLOY_YML="$FOLDER/backend-deployment.yml"
 
@@ -80,7 +74,6 @@ jobs:
             fi
           done
 
-      # 5️⃣ Commit updated deployment files back to repo
       - name: 🔄 Commit updated deployment manifests
         run: |
           git config --global user.name "GitHub Actions"
@@ -89,14 +82,12 @@ jobs:
           git commit -m "🔄 Auto-update image tags after build" || echo "No changes to commit"
           git push origin main || echo "⚠️ Git push skipped (maybe already up-to-date)"
 
-      # 6️⃣ Configure kubectl to connect to EKS
       - name: ☸️ Configure kubectl
         run: |
           aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION --alias github-actions
           kubectl config use-context github-actions
           kubectl get nodes
 
-      # 7️⃣ Deploy all YAMLs to Kubernetes
       - name: 🚀 Apply Kubernetes manifests
         run: |
           set -e
@@ -118,7 +109,6 @@ jobs:
             kubectl apply -f ingress.yml -n $K8S_NAMESPACE --validate=false
           fi
 
-      # 8️⃣ Verify all resources
       - name: ✅ Verify deployment
         run: |
           echo "🌍 Verifying deployed resources..."
