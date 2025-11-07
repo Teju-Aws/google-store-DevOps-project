@@ -37,7 +37,6 @@ jobs:
           aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION --alias github-actions
           kubectl config use-context github-actions
           echo "✅ Connected to EKS cluster"
-          kubectl get nodes || echo "⚠️ Could not list nodes — check IAM access"
 
       # 4️⃣ Apply all YAMLs (deployment, service, autoscaler, ingress)
       - name: 🚀 Apply Kubernetes Manifests
@@ -60,9 +59,3 @@ jobs:
             echo "🌐 Applying ingress.yml ..."
             kubectl apply -f ingress.yml -n $K8S_NAMESPACE --validate=false || true
           fi
-
-      # 5️⃣ Verify the deployment
-      - name: ✅ Verify resources
-        run: |
-          echo "🔍 Checking cluster resources..."
-          kubectl get pods,svc,ingress -n $K8S_NAMESPACE
