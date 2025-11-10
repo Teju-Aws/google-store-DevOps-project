@@ -12,36 +12,37 @@ env:
   BACKEND_SERVICE: "backend"
 
 permissions:
-  contents: write  # ✅ needed to push changes
+  contents: write
 
 jobs:
   build:
-    if: github.actor != 'github-actions[bot]'   # ✅ prevent infinite loops
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
-      - name: 🧾 Checkout code
+      # 1️⃣ Checkout
+      - name: 🧾 Checkout repository
         uses: actions/checkout@v4
 
       # 2️⃣ Configure AWS credentials
-      - name: 🔧 Configure AWS credentials
+      - name: 🔧 Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 3️⃣ Login to Amazon ECR
+      # 3️⃣ Login to ECR
       - name: 📦 Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 4️⃣ Build and push frontend & backend images
-      - name: 🛠 Build and push Docker images
-        id: push
+      # 4️⃣ Build and push images
+      - name: 🏗️ Build & push images
+        id: build
         run: |
           set -e
-          IMAGE_TAG="${GITHUB_SHA}"
+          IMAGE_TAG="${GITHUB_SHA::7}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
           echo "📦 Building frontend services..."
           for service in $FRONTEND_SERVICES; do
@@ -67,6 +68,7 @@ jobs:
           FOLDER="backend"
           REPO_NAME="shopping-site-backend"
           IMAGE_URI="$ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG"
+
           aws ecr describe-repositories --repository-names $REPO_NAME >/dev/null 2>&1 || \
             aws ecr create-repository --repository-name $REPO_NAME
 
@@ -74,10 +76,10 @@ jobs:
           docker push $IMAGE_URI
           echo "backend=$IMAGE_URI" >> image_list.txt
 
-          echo "✅ All images pushed."
+          echo "✅ All images pushed successfully."
           cat image_list.txt
 
-      # 5️⃣ Update YAML files with new image tags
+      # 5️⃣ Update YAML files with new image URIs (fixed regex)
       - name: 🧩 Update deployment.yml files
         run: |
           set -e
@@ -89,13 +91,16 @@ jobs:
             fi
 
             if [ -f "$yml_path" ]; then
-              echo "🧠 Updating $yml_path → $image"
-              sed -i "s|image:.*|image: $image|g" "$yml_path"
+              echo "🔧 Updating image in $yml_path"
+              # This sed regex matches any line with "image:" even if it has spaces before/after
+              sed -i -E "s|(^[[:space:]]*image:[[:space:]]*)(.*)|\1$image|" "$yml_path"
+            else
+              echo "⚠️ $yml_path not found, skipping."
             fi
           done < image_list.txt
 
-      # 6️⃣ Commit and push YAML updates
-      - name: 🪄 Commit updated YAMLs
+      # 6️⃣ Commit & push updates (only once)
+      - name: 🪄 Commit updated deployment.yml files
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -103,9 +108,9 @@ jobs:
           git add frontend/*/deployment.yml backend/deployment.yml || true
 
           if git diff --cached --quiet; then
-            echo "✅ No YAML changes to commit."
+            echo "✅ No YAML updates detected."
           else
-            git commit -m "🔄 Update image tags in deployment.yml [skip ci]"
+            git commit -m "🔄 Updated image tags in deployment.yml [skip ci]"
             git push origin main
-            echo "✅ YAMLs updated and pushed to GitHub."
+            echo "✅ YAMLs updated and pushed successfully."
           fi
