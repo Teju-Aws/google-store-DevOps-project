@@ -1,14 +1,13 @@
-# Use lightweight NGINX image
 FROM nginx:alpine
 
-# Remove default NGINX static files
+# Remove default nginx content
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy only frontend files (not YAMLs or Dockerfile)
+# Copy your site files
 COPY index.html style.css script.js /usr/share/nginx/html/
 
-# Expose port 80
-EXPOSE 80
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Start NGINX
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
