@@ -1,12 +1,8 @@
 FROM nginx:alpine
 
-# Remove default nginx content
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copy your site files
 COPY index.html style.css script.js /usr/share/nginx/html/
-
-# Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
