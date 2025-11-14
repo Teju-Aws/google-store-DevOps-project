@@ -4,14 +4,167 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Google Store — Earphones</title>
-<meta name="description" content="Advanced demo e-commerce template: animations, carousel, cart, filters, offline" />
+<meta name="description" content="Advanced demo e-commerce template: dynamic, animated, carousel, cart, filters, offline" />
 <link rel="stylesheet" href="style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.3/dist/vanilla-tilt.min.js" defer></script>
 <script src="https://unpkg.com/feather-icons" defer></script>
+<style>
+:root {
+  --glow: 0 0 16px #56e4ff99, 0 0 32px #46edb166;
+  --accent: #55fef0;
+  --accent2: #4da5e2;
+  --card-bg: #181d26;
+  --main-bg: #10141a;
+}
+
+body {
+  background: var(--main-bg);
+  min-height: 100vh;
+  font-family: 'Inter', 'Roboto', Arial, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.reveal { opacity:0; transform:translateY(55px) scale(0.97); filter: blur(8px); transition:all 1s cubic-bezier(.67,0,.21,1); }
+.reveal.show { opacity:1; transform:none; filter: blur(0);}
+.preloader { position:fixed; top:0;left:0;width:100vw;height:100vh; display:flex; align-items:center; justify-content:center; background:#111a2566;z-index:200; transition:opacity 1.2s; }
+.preloader .loader { text-align:center; }
+.preloader .spin { width:74px;height:74px;stroke:#56e4ff;stroke-width:8; fill: none; animation:spin 1.3s infinite linear, glowspin 2.5s ease-in-out infinite alternate;}
+@keyframes spin { 100% { transform:rotate(360deg); } }
+@keyframes glowspin { 0% { filter: drop-shadow(var(--glow)); } 100% { filter: drop-shadow(0 0 0 #070a12);}}
+.preloader .loader-text { color:var(--accent); font-size:1.16em; font-weight:500; letter-spacing:0.05em;}
+.hero-card.floating {
+  box-shadow: 0 8px 64px #0099ff46, 0 3px 8px #1bffff55, 0 0 42px #30fef688;
+  animation:floating 2.3s ease-in-out infinite alternate;
+  transition:box-shadow 0.3s;
+  border-radius:16px;
+  border:2px solid #4de7b422;
+  background:linear-gradient(120deg,#232836 60%,rgba(77,247,244,0.18) 100%);
+}
+@keyframes floating { 0%{ transform:translateY(0px);} 100%{ transform:translateY(-14px) scale(1.016);} }
+.hero-card:hover { box-shadow: 0 12px 88px #55fefb66, 0 1.5px 4.5px #4de7b466, var(--glow);}
+.hero-info { background:rgba(20,22,32, 0.78); border-radius:0 0 16px 16px; padding:10px 14px;}
+.btn.primary {
+  background: linear-gradient(101deg,var(--accent) 65%,var(--accent2) 100%); color:#222;
+  font-weight:bold;
+  border:none;
+  box-shadow:0 0 8px #62ffe888;
+  transition:box-shadow 0.22s, transform 0.22s;
+}
+.btn.primary:hover { box-shadow:0 2px 28px #3ffdbb55, 0 0 0 #fff0; transform:translateY(-2.5px) scale(1.06);}
+.btn.ghost {
+  background: none;
+  border:1.7px solid #3fe9f8;
+  color:#4de7b4;
+  transition:border 0.22s, box-shadow 0.32s, color 0.12s;
+}
+.btn.ghost:hover {
+  border:1.7px solid var(--accent);
+  color:var(--accent2);
+  box-shadow:0 2px 16px #4de7b488;
+}
+#browseAll, #viewDeals { transition: box-shadow 0.33s, transform 0.33s;}
+#browseAll:hover, #viewDeals:hover { box-shadow:0 4px 32px #30fdd888, var(--glow); transform:translateY(-5px) scale(1.09);}
+.catalog .grid-view, .catalog .carousel-view {
+  min-height: 410px; 
+  will-change: opacity,transform;
+  position:relative;
+}
+.earphone-card {
+  background: var(--card-bg);
+  border-radius:15px;
+  transition: box-shadow 0.35s, background 0.2s, transform 0.22s;
+  overflow:hidden;
+  box-shadow: 0 1px 7px #4de7b41d;
+  border:1.5px solid #0d324e1b;
+  position:relative;
+}
+.earphone-card:hover {
+  box-shadow:0 8px 42px #54fde76c, var(--glow);
+  background:linear-gradient(102deg,#191f29 75%,#78ffe711 100%);
+  transform:scale(1.03) rotate(-1.1deg);
+}
+.earphone-card .card-img {
+  animation: cardPulse 2.7s infinite alternate;
+  background: linear-gradient(97deg, #232c36 70%, #2fd6e733 100%);
+}
+@keyframes cardPulse {
+  100% { box-shadow: 0 8px 22px #77fde692; }
+}
+.earphone-card .card-title { 
+  text-shadow:0 2px 12px #192a36, 0 0 2px #fff8;
+  transition: color 0.24s;
+}
+.earphone-card:hover .card-title {
+  color: var(--accent2);
+}
+/* Modal advanced entry/exit  */
+.modal-backdrop[aria-hidden="false"] {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  animation:fadeInBg 0.65s cubic-bezier(.8,.01,.45,1.05) both;
+}
+@keyframes fadeInBg { 0% { background:#10141a00; } 100% { background:#10141af2; }}
+.modal-card {
+  background: #161616;
+  border-radius: 15px;
+  box-shadow: 0 8px 44px #1d2128fa;
+  position: relative;
+  overflow:hidden;
+  animation: modalPopIn 0.55s cubic-bezier(.4,2,0.3,1) both;
+}
+@keyframes modalPopIn { 0% { opacity:0; transform:scale(0.92) translateY(70px);} 100% { opacity:1; transform:none;}}
+.svg-blob {
+  position:absolute;
+  filter: blur(24px);
+  z-index:0;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* Payment animation styles */
+#paymentModal[aria-hidden="false"] .modal-card {
+  animation: payModalPop 0.67s cubic-bezier(.52,1.9,.27,1) both;
+  box-shadow:0 8px 44px #45e8dd3b, 0 0 77px #24fbbb33;
+  background: linear-gradient(104deg,#19303f 68%, #2fded7 100%);
+}
+@keyframes payModalPop { 0% { opacity:0; transform:scale(0.93) translateY(50px);}
+  100% { opacity:1; transform:none;}
+}
+
+.site-footer .foot-grid { display: flex; justify-content: space-between; align-items: center;}
+.site-footer { background: #090d13e9; margin-top:54px; border-top:1.5px solid #101b29; box-shadow:0 -3px 32px #1118;}
+.site-footer strong { color:var(--accent2); }
+.site-footer .muted { color:#85b4c9; font-size:0.97em; }
+/* Custom animated scroll bar */
+::-webkit-scrollbar { width: 10px; background:#181d26;}
+::-webkit-scrollbar-thumb { border-radius: 6px; background: linear-gradient(98deg,#153241 40%,#178c7c);}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(92deg,#29efa7,#3dd2fa); }
+/* Switch */
+.switch {
+  position: relative; display: inline-block; width: 44px; height: 24px; vertical-align: middle;
+}
+.switch input { opacity: 0; width: 0; height: 0;}
+.slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: #262b31; border-radius: 24px;
+  transition: .4s;
+}
+.switch input:checked + .slider { background: linear-gradient(92deg,#32f9d3,#198ffb 80%);}
+.slider:before {
+  position: absolute; content: "";
+  height: 18px; width: 18px; left: 4px; bottom: 3px;
+  background: #fff; border-radius: 50%;
+  transition: .4s;
+  box-shadow:0 2px 9px #a9f7ff55;
+}
+.switch input:checked + .slider:before { transform: translateX(17px); background:var(--accent);}
+</style>
 </head>
 <body data-category="earphones" data-theme="dark">
 <div id="preloader" class="preloader" role="status" aria-live="polite">
@@ -23,43 +176,37 @@
 
 <header class="site-header" role="banner">
   <div class="nav-inner container">
-      <span class="brand-text">
-        <img src="https://latestlogo.com/wp-content/uploads/2024/01/google-store-logo.png" alt="Google Store Logo" style="width:64px; height:64px; object-fit:contain; vertical-align:middle; margin-left:6px;">
+      <span class="brand-text" style="animation:fadeInBrand 1.3s cubic-bezier(.6,0,.4,1) 0.6s both;">
+        <img src="https://latestlogo.com/wp-content/uploads/2024/01/google-store-logo.png" alt="Google Store Logo" style="width:64px; height:64px; object-fit:contain; vertical-align:middle; margin-left:6px;filter:drop-shadow(var(--glow));">
       </span>
-    </a>
     <nav class="main-nav" aria-label="Primary">
       <ul>
         <li><a href="/electronics" class="">Electronics</a></li>
-        <li><a href="/phones" class="active">Phones</a></li>
+        <li><a href="/phones" class="">Phones</a></li>
         <li><a href="/computers" class="">Computers</a></li>
-        <li><a href="/earphones" class="">Earphones</a></li>
+        <li><a href="/earphones" class="active">Earphones</a></li>
       </ul>
     </nav>
-    <div class="nav-actions">
+    <div class="nav-actions" style="animation:navActionsIn 1.2s cubic-bezier(.56,0,.24,1) 0.2s both;">
       <div class="search-wrap">
         <input id="search" type="search" placeholder="Search products..." aria-label="Search products">
         <button id="clearSearch" class="icon-btn" title="Clear search" aria-hidden="true">✕</button>
       </div>
       <button id="viewToggle" class="icon-btn" title="Toggle view" aria-pressed="false">🔁</button>
       <button id="themeToggle" class="icon-btn" title="Toggle theme" aria-pressed="false">🌓</button>
-      <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart">🛒 <span id="cartCount" class="cart-count">0</span></button>
+      <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart"><span style="filter:drop-shadow(0 0 7px #30ffd5cc)">🛒</span> <span id="cartCount" class="cart-count">0</span></button>
     </div>
   </div>
 </header>
 
-  
-<div class="parallax">
-  <div class="p-layer layer-1"></div>
-  <div class="p-layer layer-2"></div>
-  <div class="p-layer layer-3"></div>
-</div>
+<!-- Removed parallax and background animation -->
 
 <main class="container main" role="main">
   <section class="hero">
     <div class="hero-left reveal">
-      <h1 id="page-title">Earphones</h1>
-      <p class="lead" id="page-sub"></p>
-      <div class="hero-cta">
+      <h1 id="page-title" style="animation:fadeWordIn 1.3s cubic-bezier(.72,0,.2,1) 0.5s both;">Earphones</h1>
+      <p class="lead" id="page-sub" style="animation:fadeWordIn 1.6s cubic-bezier(.62,0,.29,1) 0.7s both"></p>
+      <div class="hero-cta" style="animation:heroCtaIn 1.2s cubic-bezier(.62,-0.01,.35,1) 0.9s both;">
         <button id="browseAll" class="btn primary">Browse all</button>
         <button id="viewDeals" class="btn ghost">Top deals</button>
       </div>
@@ -69,7 +216,8 @@
     </div>
     <div class="hero-right reveal">
       <div class="hero-card floating" id="hero-feature">
-        <img id="hero-image" src="https://via.placeholder.com/420x280?text=Feature" alt="Featured product" loading="lazy">
+        <svg class="svg-blob" width="330" height="170" viewBox="0 0 330 170" style="top:-39px; left:-51px;"><ellipse cx="150" cy="80" rx="172" ry="74" fill="#47f7ce22" /></svg>
+        <img id="hero-image" src="https://via.placeholder.com/420x280?text=Feature" alt="Featured product" loading="lazy" style="z-index:1; animation:heroFloat 4.8s infinite alternate cubic-bezier(.3,0,.7,1);">
         <div class="hero-info">
           <div id="hero-name">Hot pick</div>
           <div id="hero-price">₹0</div>
@@ -81,7 +229,7 @@
   <section class="controls reveal">
     <div class="controls-left">
       <label>Sort:
-        <select id="sort" onchange="this.blur();">
+        <select id="sort">
           <option value="featured">Featured</option>
           <option value="price-asc">Price: Low → High</option>
           <option value="price-desc">Price: High → Low</option>
@@ -89,7 +237,7 @@
         </select>
       </label>
       <label>Category:
-        <select id="categoryFilter" onchange="this.blur();">
+        <select id="categoryFilter">
           <option value="all">All</option>
           <option value="new">New arrivals</option>
         </select>
@@ -109,7 +257,7 @@
   <section class="catalog reveal">
     <div id="gridView" class="grid-view" aria-live="polite" tabindex="-1"></div>
     <div id="carouselView" class="carousel-view" aria-hidden="true">
-      <div class="swiper mySwiper">
+      <div class="swiper mySwiper" style="animation:popinSwiper 1.2s cubic-bezier(.5,.1,.2,1) both;">
         <div class="swiper-wrapper" id="swiperWrapper"></div>
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
@@ -121,9 +269,10 @@
 
 <div id="modal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="modal-card" role="document">
+    <svg class="svg-blob" width="360" height="210" viewBox="0 0 360 210"><ellipse cx="175" cy="90" rx="170" ry="80" fill="#37fff355" /></svg>
     <button id="modalClose" class="close" aria-label="Close">✕</button>
     <div class="modal-grid">
-      <div class="modal-media"><img id="modalImg" src="" alt="" loading="lazy"></div>
+      <div class="modal-media"><img id="modalImg" src="" alt="" loading="lazy" style="transition:transform 0.7s cubic-bezier(.47,1.7,.4,1);"></div>
       <div class="modal-content">
         <h2 id="modalTitle">Product</h2>
         <p id="modalDesc" class="muted">Description</p>
@@ -137,7 +286,7 @@
   </div>
 </div>
 
-<aside id="cart" class="cart" aria-label="Shopping cart" aria-hidden="true" style="background: #000;">
+<aside id="cart" class="cart" aria-label="Shopping cart" aria-hidden="true" style="background: #000;transition:right 0.58s cubic-bezier(.17,.75,.39,1.28),box-shadow 0.28s;">
   <div class="cart-header">
     <h3>Cart</h3>
     <button id="cartClose" class="close" aria-label="Close">✕</button>
@@ -154,16 +303,6 @@
     </div>
   </div>
 </aside>
-
-<footer class="site-footer">
-  <div class="container">
-    <div class="foot-grid">
-      <div><strong>Google Store</strong><p class="muted">developed by abinash kumar</p></div>
-      <div class="muted">© <span id="year"></span></div>
-    </div>
-  </div>
-</footer>
-
 
 <!-- Payment Modal -->
 <div id="paymentModal" class="modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" style="display:none">
@@ -737,8 +876,8 @@ paymentModal.addEventListener('mousedown', function(e) {
 });
 
 </script>  
+  
 <script src="script.js" defer></script>
 </body>
 </html>
-
 
