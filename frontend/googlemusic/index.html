@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google music</title>
+    <title>Google Music</title>
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1200px-Google_%22G%22_logo.svg.png">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
 </head>
 <body>
     <div class="music-player-container">
+        <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <img src="https://images.genius.com/59a92f849e980e83af49a57ca3167295.1000x1000x1.jpg" alt="Music Player Logo" class="logo-img" style="width:64px; height:64px;">
+                <img src="https://images.genius.com/59a92f849e980e83af49a57ca3167295.1000x1000x1.jpg" alt="Music Player Logo" class="logo-img">
+                <span class="app-title">Fusion Music</span>
             </div>
             <div class="menu">
                 <div class="menu-item active">
@@ -40,22 +44,22 @@
             <div class="playlist-section">
                 <div class="section-header">
                     <span>Your Playlists</span>
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus add-playlist-btn"></i>
                 </div>
-                <div class="playlist-list">
-                    <div class="playlist-item active" id="playlist-my-mix">
+                <div class="playlist-list" id="playlist-list">
+                    <div class="playlist-item active" data-playlist-id="my-mix">
                         <i class="fas fa-headphones"></i>
                         <span>My Mix</span>
                     </div>
-                    <div class="playlist-item" id="playlist-chill-vibes">
+                    <div class="playlist-item" data-playlist-id="chill-vibes">
                         <i class="fas fa-sun"></i>
                         <span>Chill Vibes</span>
                     </div>
-                    <div class="playlist-item" id="playlist-workout">
+                    <div class="playlist-item" data-playlist-id="workout">
                         <i class="fas fa-running"></i>
                         <span>Workout</span>
                     </div>
-                    <div class="playlist-item" id="playlist-road-trip">
+                    <div class="playlist-item" data-playlist-id="road-trip">
                         <i class="fas fa-car"></i>
                         <span>Road Trip</span>
                     </div>
@@ -63,106 +67,75 @@
             </div>
         </div>
         
+        <!-- Main Content -->
         <div class="main-content">
             <div class="now-playing-header">
-                <h1>Now Playing</h1>
+                <h1>Now Playing <i class="fas fa-music"></i></h1>
             </div>
             
-            <div class="player-container">
-                <div class="album-art">
-                    <img src="https://source.unsplash.com/random/400x400/?music,album" alt="Album Art" id="album-art" style="animation: none; transform: none;">
+            <div class="player-container" id="player-container">
+                <div class="album-art" id="album-art-container">
+                    <img src="https://source.unsplash.com/random/400x400/?music,album" onerror="this.onerror=null; this.src='https://placehold.co/400x400/1e222d/bdc3c7?text=Music';" alt="Album Art" id="album-art">
                     <div class="vinyl-overlay"></div>
                 </div>
                 
                 <div class="song-info">
-                    <h2 id="song-title">Song Title</h2>
-                    <p id="artist-name">Artist Name</p>
+                    <h2 id="song-title">Music Player Demo</h2>
+                    <p id="artist-name">Select a playlist to start</p>
+                    
                     <div class="progress-container">
-                        <div class="progress-bar" id="progress-bar"></div>
+                        <!-- THE VISUAL PROGRESS BAR -->
+                        <div id="progress-bar"></div> 
                         <div class="time-info">
                             <span id="current-time">0:00</span>
-                            <span id="duration">3:45</span>
+                            <span id="duration">0:00</span>
                         </div>
                     </div>
                     
                     <div class="controls">
-                        <button class="control-btn" id="shuffle-btn">
+                        <button class="control-btn" id="shuffle-btn" title="Shuffle">
                             <i class="fas fa-random"></i>
                         </button>
-                        <button class="control-btn" id="prev-btn">
+                        <button class="control-btn" id="prev-btn" title="Previous">
                             <i class="fas fa-step-backward"></i>
                         </button>
-                        <button class="control-btn play-btn" id="play-btn">
+                        <button class="control-btn play-btn" id="play-btn" title="Play/Pause">
                             <i class="fas fa-play" id="play-icon"></i>
                         </button>
-                        <button class="control-btn" id="next-btn">
+                        <button class="control-btn" id="next-btn" title="Next">
                             <i class="fas fa-step-forward"></i>
                         </button>
-                        <button class="control-btn" id="repeat-btn">
+                        <button class="control-btn" id="repeat-btn" title="Repeat Mode">
                             <i class="fas fa-redo"></i>
                         </button>
                     </div>
-                    
-                    <div class="volume-control" id="volume-control" style="display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-volume-down" id="volume-down-icon" style="transition: color 0.3s;"></i>
-                        <input type="range" 
-                               id="volume-slider" 
-                               min="0" 
-                               max="1" 
-                               step="0.01" 
-                               value="0.7"
-                               style="transition: background 0.3s; width: 120px;"
-                        >
-                        <i class="fas fa-volume-up" id="volume-up-icon" style="transition: color 0.3s;"></i>
-                        <span id="volume-value" style="width: 32px; display: inline-block; text-align: right;">70%</span>
+
+                    <div class="volume-control" id="volume-control">
+                        <i class="fas fa-volume-down" id="volume-down-icon"></i>
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.7">
+                        <i class="fas fa-volume-up" id="volume-up-icon"></i>
+                        <span id="volume-value">70%</span>
                     </div>
-                    <script>
-                        // Animation & dynamic for volume slider
-                        const volumeSlider = document.getElementById('volume-slider');
-                        const volumeValue = document.getElementById('volume-value');
-                        const volumeDownIcon = document.getElementById('volume-down-icon');
-                        const volumeUpIcon = document.getElementById('volume-up-icon');
-                        // Color interpolate based on volume (low=blue, mid=gold/yellow, high=red)
-                        function getVolumeColor(val) {
-                            if (val < 0.33) return "#3498db";
-                            if (val < 0.66) return "#f1c40f";
-                            return "#e74c3c";
-                        }
-                        function updateVolumeUI(val) {
-                            const percent = Math.round(val * 100);
-                            volumeValue.textContent = percent + '%';
-                            const color = getVolumeColor(val);
-                            volumeSlider.style.background = `linear-gradient(90deg, ${color} ${percent}%, #eee ${percent}%)`;
-                            volumeDownIcon.style.color = val === 0 ? "#bbb" : color;
-                            volumeUpIcon.style.color = val > 0.7 ? color : "#888";
-                        }
-                        // Animate fill and icon color dynamically on input
-                        volumeSlider.addEventListener('input', (e) => {
-                            const val = parseFloat(volumeSlider.value);
-                            updateVolumeUI(val);
-                        });
-                        // For initial UI
-                        updateVolumeUI(parseFloat(volumeSlider.value));
-                    </script>
                 </div>
             </div>
             
             <div class="queue-section">
-                <h3>Up Next</h3>
+                <h3>Up Next <i class="fas fa-list-ul"></i></h3>
                 <div class="queue-list" id="queue-list">
-                    <!-- Queue items will be added dynamically -->
+                    <!-- Dynamic queue items will be inserted here -->
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Audio Player Element (hidden, controlled by JS) -->
     <audio id="audio-player"></audio>
     
-    <!-- Modal for restriction message -->
-    <div id="block-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:10000;justify-content:center;align-items:center;">
-        <div style="background:#fff;padding:32px 40px;box-shadow:0 10px 32px rgba(70,30,23,0.15);border-radius:12px;text-align:center;max-width:90vw;">
-            <div style="font-size:2rem;color:#c0392b;margin-bottom:18px;"><i class="fas fa-exclamation-triangle"></i></div>
-            <div style="font-size:1.25rem;color:#222;font-weight:bold;margin-bottom:14px;">
+    <!-- Restriction Modal UI (instead of alert()) -->
+    <div id="block-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);z-index:10000;justify-content:center;align-items:center;">
+        <div style="background:#2c3e50;color:#ecf0f1;padding:32px 40px;box-shadow:0 10px 32px rgba(0,0,0,0.4);border-radius:12px;text-align:center;max-width:90vw;">
+            <div style="font-size:2rem;color:#e74c3c;margin-bottom:18px;"><i class="fas fa-exclamation-triangle"></i></div>
+            <div style="font-size:1.25rem;font-weight:bold;margin-bottom:14px;">
                 Warning!<br>
                 Admin did not allow.<br>
                 Please contact admin: Abinash Kumar
@@ -172,49 +145,7 @@
             </button>
         </div>
     </div>
-    <script>
-        function showBlockedModal() {
-            document.getElementById('block-modal').style.display = 'flex';
-        }
-
-        // IDs of sidebar and playlist items to attach the restriction modal
-        const restrictionMenuIds = [
-            'discover-menu',
-            'favorites-menu',
-            'recent-menu',
-            'playlists-menu',
-            'playlist-my-mix',
-            'playlist-chill-vibes',
-            'playlist-workout',
-            'playlist-road-trip'
-        ];
-        restrictionMenuIds.forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el) {
-                el.style.cursor = 'pointer';
-                el.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    showBlockedModal();
-                });
-            }
-        });
-
-        // Also attach after DOM loaded to ensure IDs are in DOM
-        document.addEventListener('DOMContentLoaded', function() {
-            restrictionMenuIds.forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) {
-                    el.style.cursor = 'pointer';
-                    el.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        showBlockedModal();
-                    });
-                }
-            });
-        });
-    </script>
-
     <script src="script.js"></script>
-</body>
 
+</body>
 </html>
