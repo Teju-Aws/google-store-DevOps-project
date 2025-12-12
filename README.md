@@ -1,4 +1,4 @@
-# Kubernetes + Docker + EKSCTL Setup Guide
+# Kubernetes + Docker + EKS-CTL
 
 This README provides end-to-end steps for installing **eksctl**,
 **kubectl**, **Docker**, **Ingress-Nginx**, **MariaDB**, **ArgoCD**, and
