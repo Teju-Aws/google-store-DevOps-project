@@ -127,7 +127,7 @@ import boto3
 from datetime import datetime
 
 # ---------------- MySQL CONFIG ----------------
-DB_HOST = "computers.cjy48iyci4zm.ap-northeast-1.rds.amazonaws.com"
+DB_HOST = "database-1.c16seyicoosa.ap-northeast-1.rds.amazonaws.com"
 DB_USER = "admin"
 DB_PASSWORD = "Cloud1234"
 DB_NAME = "computers"
