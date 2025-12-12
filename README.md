@@ -1,14 +1,14 @@
-#!/bin/bash
+# =========================================================================
+# 📋 COPY CODE: All-in-One Setup Script
+# =========================================================================
 
-# =========================================================================
-# 🛠️ Installation and Configuration Script for EKS, Kubernetes, and ArgoCD
-# =========================================================================
+#!/bin/bash
 
 # --- 1. Kubernetes and EKS Prerequisites ---
 
 echo "--- 1.1 Installing eksctl ---"
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | \
-tar xz -C /tmp
+[cite_start]tar xz -C /tmp [cite: 1]
 sudo mv /tmp/eksctl /usr/local/bin
 eksctl version
 
@@ -53,8 +53,9 @@ sudo dnf install -y mariadb105
 echo "--- 5.2 Creating Database and Users Table in MariaDB ---"
 mysql -e "
 CREATE DATABASE IF NOT EXISTS cloud;
-USE cloud;
+[cite_start]USE cloud; [cite: 3]
 DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
@@ -64,8 +65,7 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
-"
-# The 'exit' command is not needed when using 'mysql -e'
+[cite_start]" # The 'exit' command is not needed when using 'mysql -e' [cite: 4]
 
 # --- 6. ArgoCD Installation and Configuration ---
 
@@ -83,7 +83,7 @@ kubectl create namespace google
 echo "--- 6.4 Retrieving ArgoCD initial admin password ---"
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" |
-base64 -d
+[cite_start]base64 -d [cite: 5]
 
 echo ""
 echo "--- Script Execution Complete! ---"
